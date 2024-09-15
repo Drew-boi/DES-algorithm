@@ -85,6 +85,8 @@ S8 = [[13,  2,  8,  4,  6, 15, 11,  1, 10,  9,  3, 14,  5,  0, 12,  7],
       [ 7, 11,  4,  1,  9, 12, 14,  2,  0,  6, 10, 13, 15,  3,  5,  8], 
       [ 2,  1, 14,  7,  4, 10,  8, 13, 15, 12,  9,  0,  3,  5,  6, 11]]
 
+S = [S1, S2, S3, S4, S5, S6, S7, S8]
+
 P = [[16,  7, 20, 21], 
      [29, 12, 28, 17], 
      [ 1, 15, 23, 26], 
@@ -133,9 +135,52 @@ def subkeys(key):
 
 
 def f(r, k):
-    ...
+    expandedR = []
+    for i in range(len(E)):
+        for j in range(len(E[0])):
+            expandedR.append(r[E[i][j] - 1])
+    # print(''.join(expandedR) == '011110100001010101010101011110100001010101010101')
+    intr = int(''.join(expandedR),2)
+    intk = int(''.join(k),2)
+    numbits = len(expandedR)
+    intxor = intr ^ intk
+    binxor = bin(intxor)[2:].zfill(numbits)
+    binxorarr = []
+    num6bits = 8
+    for i in range(num6bits):
+        binxorarr.append(binxor[i * 6 :i * 6 + 6])
+    numSBits = 4
+    binReducedArr = []
+    for i in range(len(S)):
+        rowArray = [binxorarr[i][0], binxorarr[i][-1]]
+        colArray = [binxorarr[i][1:-1]]
+        row = int(''.join(rowArray), 2)
+        col = int(''.join(colArray), 2)
+        newInt = S[i][row][col]
+        binNewInt = bin(newInt)[2:].zfill(numSBits)
+        for i in range(len(binNewInt)):
+            binReducedArr.append(binNewInt[i])
+    finalF = []
+    for i in range(len(P)):
+        for j in range(len(P[0])):
+            finalF.append(binReducedArr[P[i][j] - 1])
+    return finalF
 
 def des(message, key):
+    # Convert message and key to bits
+    intmessage = int(message, 16)
+    numbits = len(message) * 4 - 8 # subtract 8 because of 0x
+    binmessage = bin(intmessage)[2:].zfill(numbits)
+    message = []
+    for i in range(numbits):
+        message.append(binmessage[i:i + 1]) # array of message bits
+    intkey = int(key, 16)
+    knumbits = len(key) * 4 - 8 # subtract 8 because of 0x
+    binkey = bin(intkey)[2:].zfill(knumbits)    
+    key = []
+    for i in range(knumbits):
+        key.append(binkey[i:i + 1]) # array of key bits
+    # Get sub Keys
     keys = subkeys(key)
     permutedMessage = []
     for i in range(len(IP)):
@@ -150,35 +195,27 @@ def des(message, key):
         intl = int(''.join(l),2)
         intf = int(''.join(foutput),2)
         nbits = len(l)
-        # intr = intl ^ intf (IMPLEMENT f)
-        # r = bin(intr)[2:].zfill(nbits)
+        intr = intl ^ intf
+        rStr = bin(intr)[2:].zfill(nbits)
+        r = []
+        for i in range(len(rStr)):
+            r.append(rStr[i])
         l = tempr
-    rl = np.concatenate(r, l) # swap order one last time and concatenate
+    rl = np.concatenate([r, l]) # swap order one last time and concatenate
     finalMessage = []
     for i in range(len(FP)):
         for j in range(len(FP[0])):
             finalMessage.append(rl[FP[i][j] - 1])
     finalMessageStr = ''.join(finalMessage)
-    # finalMessageHex = 
-    return finalMessageStr
+    encryptedMessage = hex(int(finalMessageStr, 2))
+    return encryptedMessage
 
 def main():
     hexmessage = '0x0123456789ABCDEF'
-    intmessage = int(hexmessage, 16)
-    numbits = len(hexmessage) * 4 - 8 # subtract 8 because of 0x
-    binmessage = bin(intmessage)[2:].zfill(numbits)
     hexkey =     '0x133457799BBCDFF1'
-    intkey = int(hexkey, 16)
-    knumbits = len(hexkey) * 4 - 8 # subtract 8 because of 0x
-    binkey = bin(intkey)[2:].zfill(knumbits)
-    binmessagearr = []
-    for i in range(numbits):
-        binmessagearr.append(binmessage[i:i + 1]) # array of message bits
-    
-    binkeyarr = []
-    for i in range(knumbits):
-        binkeyarr.append(binkey[i:i + 1]) # array of key bits
-    encrypted_message = des(binmessagearr, binkeyarr)
+    encrypted_message = des(hexmessage, hexkey)
+    print(encrypted_message)
+    print(encrypted_message == '0x85e813540f0ab405')
 
 if __name__ == '__main__':
     main()
