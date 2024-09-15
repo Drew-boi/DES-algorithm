@@ -136,32 +136,31 @@ def subkeys(key):
 
 def f(r, k):
     expandedR = []
-    for i in range(len(E)):
-        for j in range(len(E[0])):
-            expandedR.append(r[E[i][j] - 1])
-    # print(''.join(expandedR) == '011110100001010101010101011110100001010101010101')
+    for i in range(len(E)): # use expantion permuation
+        for j in range(len(E[0])): # expand from 32 bits to 48 bits
+            expandedR.append(r[E[i][j] - 1]) #
     intr = int(''.join(expandedR),2)
     intk = int(''.join(k),2)
     numbits = len(expandedR)
-    intxor = intr ^ intk
+    intxor = intr ^ intk #xor key with expanded r
     binxor = bin(intxor)[2:].zfill(numbits)
     binxorarr = []
     num6bits = 8
     for i in range(num6bits):
-        binxorarr.append(binxor[i * 6 :i * 6 + 6])
+        binxorarr.append(binxor[i * 6 :i * 6 + 6]) # put bits into an array
     numSBits = 4
     binReducedArr = []
-    for i in range(len(S)):
+    for i in range(len(S)): # Use S to convert from 48 bits to 32 bits
         rowArray = [binxorarr[i][0], binxorarr[i][-1]]
         colArray = [binxorarr[i][1:-1]]
         row = int(''.join(rowArray), 2)
         col = int(''.join(colArray), 2)
-        newInt = S[i][row][col]
+        newInt = S[i][row][col] # Grab 32 bit int from S
         binNewInt = bin(newInt)[2:].zfill(numSBits)
         for i in range(len(binNewInt)):
-            binReducedArr.append(binNewInt[i])
+            binReducedArr.append(binNewInt[i]) # Put bits of the int in an array
     finalF = []
-    for i in range(len(P)):
+    for i in range(len(P)): # final F permutation
         for j in range(len(P[0])):
             finalF.append(binReducedArr[P[i][j] - 1])
     return finalF
@@ -183,31 +182,31 @@ def des(message, key):
     # Get sub Keys
     keys = subkeys(key)
     permutedMessage = []
-    for i in range(len(IP)):
+    for i in range(len(IP)): # Initial permutation
         for j in range(len(IP[0])):
             permutedMessage.append(message[IP[i][j] - 1])
     l = permutedMessage[:len(permutedMessage) // 2]
-    r = permutedMessage[len(permutedMessage)//2:]
+    r = permutedMessage[len(permutedMessage)//2:] # Split bit array into halves
     rounds = 16
     for i in range(rounds):
-        tempr = r
-        foutput = f(r, keys[i])
+        tempr = r # tempR is later used to swap r with l
+        foutput = f(r, keys[i]) # to be xor'd with l
         intl = int(''.join(l),2)
-        intf = int(''.join(foutput),2)
+        intf = int(''.join(foutput),2) # convert to int type so you can xor
         nbits = len(l)
         intr = intl ^ intf
-        rStr = bin(intr)[2:].zfill(nbits)
+        rStr = bin(intr)[2:].zfill(nbits) # convert xor'd int to binary
         r = []
         for i in range(len(rStr)):
-            r.append(rStr[i])
-        l = tempr
+            r.append(rStr[i]) # put each bit into array r
+        l = tempr # swap l with old r
     rl = np.concatenate([r, l]) # swap order one last time and concatenate
     finalMessage = []
-    for i in range(len(FP)):
+    for i in range(len(FP)): # final permutation
         for j in range(len(FP[0])):
             finalMessage.append(rl[FP[i][j] - 1])
     finalMessageStr = ''.join(finalMessage)
-    encryptedMessage = hex(int(finalMessageStr, 2))
+    encryptedMessage = hex(int(finalMessageStr, 2)) # convert bits back to hex
     return encryptedMessage
 
 def main():
