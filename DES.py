@@ -212,7 +212,7 @@ def des(message, key):
 def main():
     hexmessage = '0x0123456789ABCDEF'
     hexkey =     '0x133457799BBCDFF1'
-    encrypted_message = des(hexmessage, hexkey)
+    encrypted_message = des(hexmessage, hexkey) # Please pass the hex in as a string
     print(encrypted_message)
     print(encrypted_message == '0x85e813540f0ab405')
 
